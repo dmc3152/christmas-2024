@@ -1,0 +1,22 @@
+<div class="container" [class.right-buffer]="(isLarge$ | async)">
+    <mat-card appearance="raised">
+        <mat-card-content>
+            <mat-form-field>
+                <mat-label for="name">Name</mat-label>
+                <input matInput id="name" type="text" [formControl]="name">
+                <mat-hint>You or your team's name</mat-hint>
+            </mat-form-field>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card appearance="raised">
+        <mat-card-content>
+            @if (isDisabled()) {
+                <span>Please enter your name to play</span>
+            }
+            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" [disabled]="isDisabled()">
+                <span class="buzzer-label">Press Me</span>
+            </button>
+        </mat-card-content>
+    </mat-card>
+</div>

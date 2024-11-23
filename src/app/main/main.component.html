@@ -1,0 +1,34 @@
+<mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+        [mode]="(isHandset$ | async) ? 'over' : 'over'">
+        <mat-toolbar>Menu</mat-toolbar>
+        <mat-nav-list>
+            <a mat-list-item routerLink="/main/agenda">Program</a>
+            <a mat-list-item routerLink="#">Ice Breakers</a>
+            <a mat-list-item routerLink="/main/buzzer">Buzzer</a>
+            <a mat-list-item routerLink="#">Family Feud</a>
+            <a mat-list-item routerLink="#">Share Flyer</a>
+        </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+        <mat-toolbar class="mat-toolbar mat-primary">
+            <button type="button" aria-label="Toggle sidenav" class="menu-button" mat-icon-button (click)="drawer.toggle()">
+                <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+            </button>
+            @if (isHandset$ | async) {
+            <span>EB2 Christmas</span>
+            }
+            @else {
+            <span>Ewa Beach 2nd Ward Christmas</span>
+            }
+        </mat-toolbar>
+         <div class="content">
+            <div class="outlet-wrapper">
+                <router-outlet></router-outlet>
+            </div>
+            <footer>
+                This is not an official website for the Church of Jesus Christ of Latter-day Saints
+            </footer>
+         </div>
+    </mat-sidenav-content>
+</mat-sidenav-container>

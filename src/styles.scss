@@ -1,1 +1,33 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+@use './theme-colors.scss' as custom;
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Customize the entire app. Change :root to your selector if you want to scope the styles.
+:root {
+    @include mat.toolbar-overrides((
+        container-background-color: var(--sys-surface),
+        // container-text-color: red,
+    ));
+
+    @include mat.sidenav-overrides((
+        container-background-color: var(--mat-sys-secondary-container),
+        // content-background-color: url('../public/christmas-background.jpg'),
+        // container-text-color: red,
+    ));
+}
+
+html {
+    color-scheme: light dark;
+    @include mat.theme((
+        color: custom.$primary-palette,
+        typography: Roboto,
+        density: 0,
+    ));
+}
+
+body {
+    background-image: url('../public/christmas-background.jpg');
+}

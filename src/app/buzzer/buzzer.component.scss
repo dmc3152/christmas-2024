@@ -1,0 +1,60 @@
+.buzzer-button {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: #FF0000;
+    /* Darker red for a more 3D effect */
+    border: none;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+    /* Add a subtle shadow */
+}
+
+.buzzer-button:not(.disabled):active {
+    background-color: #8B0000;
+    /* Darker red for a more 3D effect */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+    /* Increase shadow intensity */
+    transform: scale(0.95);
+}
+
+.buzzer-button.disabled {
+    background-color: #3e2828;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 16px;
+}
+
+.right-buffer {
+    margin-right: 15%;
+}
+
+mat-card {
+    width: 100%;
+    max-width: 450px;
+    background-color: rgba(#181c22, 0);
+}
+
+mat-card-content, mat-card-actions, mat-card-footer {
+    background-color: rgba(#181c22, 0.75);
+    backdrop-filter: blur(3px);
+    border-top-left-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
+    border-top-right-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
+    border-bottom-left-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
+    border-bottom-right-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
+}
+
+mat-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
