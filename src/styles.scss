@@ -20,7 +20,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 html {
-    color-scheme: light dark;
+    color-scheme: dark;
     @include mat.theme((
         color: custom.$primary-palette,
         typography: Roboto,
