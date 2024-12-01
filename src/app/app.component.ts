@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
@@ -8,5 +9,9 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'christmas-2024';
+  private _titleService = inject(Title);
+
+  ngOnInit() {
+    this._titleService.setTitle('EB2 Ward - Christmas 2024');
+  }
 }

@@ -1,5 +1,5 @@
 <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    <!-- <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
         [mode]="(isHandset$ | async) ? 'over' : 'over'">
         <mat-toolbar>Menu</mat-toolbar>
         <mat-nav-list>
@@ -9,12 +9,13 @@
             <a mat-list-item routerLink="#">Family Feud</a>
             <a mat-list-item routerLink="#">Share Flyer</a>
         </mat-nav-list>
-    </mat-sidenav>
+    </mat-sidenav> -->
     <mat-sidenav-content>
         <mat-toolbar class="mat-toolbar mat-primary">
-            <button type="button" aria-label="Toggle sidenav" class="menu-button" mat-icon-button (click)="drawer.toggle()">
+            <img src="church-logo.png" height="32px" width="32px" class="logo">
+            <!-- <button type="button" aria-label="Toggle sidenav" class="menu-button" mat-icon-button (click)="drawer.toggle()">
                 <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-            </button>
+            </button> -->
             @if (isHandset$ | async) {
             <span>EB2 Christmas</span>
             }

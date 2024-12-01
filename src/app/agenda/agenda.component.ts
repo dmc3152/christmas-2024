@@ -2,11 +2,12 @@ import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
 import { Observable, map, shareReplay } from 'rxjs';
 
 @Component({
   selector: 'app-agenda',
-  imports: [MatCardModule, MatButtonModule],
+  imports: [MatCardModule, MatButtonModule, MatListModule],
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss'
 })
