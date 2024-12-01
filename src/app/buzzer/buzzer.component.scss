@@ -3,7 +3,7 @@
     height: 200px;
     border-radius: 50%;
     background-color: #FF0000;
-    /* Darker red for a more 3D effect */
+    // /* Darker red for a more 3D effect */
     border: none;
     color: white;
     font-size: 24px;
@@ -12,6 +12,31 @@
     transition: all 0.1s ease-in-out;
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
     /* Add a subtle shadow */
+    -webkit-touch-callout: none;
+    /* iOS */
+    -webkit-user-select: none;
+    /* Safari */
+    -khtml-user-select: none;
+    /* Konqueror */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+}
+
+@media (max-width: 600px) {
+    .buzzer-button {
+        cursor: auto;
+    }
+}
+
+.buzzer-button:focus {
+    outline: none;
+}
+
+.buzzer-button:active {
+    outline: none;
 }
 
 .buzzer-button:not(.disabled):active {
@@ -39,13 +64,15 @@
 
 mat-card {
     width: 100%;
-    max-width: 450px;
+    // max-width: 450px;
     background-color: rgba(#181c22, 0);
 }
 
-mat-card-content, mat-card-actions, mat-card-footer {
+mat-card-content,
+mat-card-actions,
+mat-card-footer {
     background-color: rgba(#181c22, 0.75);
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(8px);
     border-top-left-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
     border-top-right-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));
     border-bottom-left-radius: var(--mdc-elevated-card-container-shape, var(--mat-sys-corner-medium));

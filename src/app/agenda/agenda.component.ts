@@ -3,11 +3,10 @@ import { Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Observable, map, shareReplay } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-agenda',
-  imports: [MatCardModule, MatButtonModule, AsyncPipe],
+  imports: [MatCardModule, MatButtonModule],
   templateUrl: './agenda.component.html',
   styleUrl: './agenda.component.scss'
 })

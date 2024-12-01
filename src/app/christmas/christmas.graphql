@@ -1,0 +1,47 @@
+query GetBuzzerById($buzzerId: ID!) {
+  buzzer(id: $buzzerId) {
+    id
+    name
+    creator {
+      id
+      name
+    }
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+query GetUnauthenticatedSelf {
+  unauthenticatedSelf {
+    id
+    name
+  }
+}
+
+mutation SignInAsUnauthenticatedUser($name: String!) {
+  signInAsUnauthenticatedUser(name: $name) {
+    id
+    name
+  }
+}
+
+mutation UpdateUnauthenticatedUser($name: String!) {
+  updateUnauthenticatedUser(name: $name) {
+    id
+    name
+  }
+}
+
+subscription BuzzerAvailability($code: String!) {
+  buzzerAvailability(code: $code) {
+    isAvailable
+    reason
+  }
+}

@@ -1,22 +1,29 @@
-<div class="container" [class.right-buffer]="(isLarge$ | async)">
+<div class="container">
     <mat-card appearance="raised">
         <mat-card-content>
             <mat-form-field>
                 <mat-label for="name">Name</mat-label>
-                <input matInput id="name" type="text" [formControl]="name">
+                <input matInput id="name" type="text" [formControl]="formGroup.controls.name">
                 <mat-hint>You or your team's name</mat-hint>
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label for="code">Buzzer Code</mat-label>
+                <input matInput id="code" type="text" [formControl]="formGroup.controls.code">
+                <mat-hint>Provided by the game host</mat-hint>
             </mat-form-field>
         </mat-card-content>
     </mat-card>
 
     <mat-card appearance="raised">
         <mat-card-content>
-            @if (isDisabled()) {
-                <span>Please enter your name to play</span>
-            }
             <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" [disabled]="isDisabled()">
                 <span class="buzzer-label">Press Me</span>
             </button>
+            @if (isDisabled()) {
+                @for (item of buzzerAvailability().reason; track $index) {
+                <span>{{item}}</span>
+                }
+            }
         </mat-card-content>
     </mat-card>
 </div>

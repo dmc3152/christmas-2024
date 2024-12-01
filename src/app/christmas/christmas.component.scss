@@ -21,6 +21,7 @@
 mat-sidenav-content {
     background-image: url('../../../public/christmas-background.jpg');
     background-size: cover;
+    background-position: center;
     max-height: 100%;
     height: 100%;
     display: flex;
@@ -35,6 +36,7 @@ mat-sidenav-content {
     display: flex;
     flex-direction: column;
     flex: 1;
+    align-items: center;
     overflow-y: auto;
     padding: 16px;
 }
@@ -45,8 +47,11 @@ mat-sidenav-content {
 
 footer {
     height: min-content;
+    align-self: center;
     padding: 16px;
-    padding-top: 32px;
+    margin-top: 32px;
     text-align: center;
     font: var(--mat-sys-body-small);
+    background-color: rgba(#181c22, 0.75);
+    backdrop-filter: blur(3px);
 }

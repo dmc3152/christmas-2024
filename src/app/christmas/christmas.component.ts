@@ -11,9 +11,9 @@ import { map, shareReplay } from 'rxjs/operators';
 import { RouterLink, RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrl: './main.component.scss',
+  selector: 'app-christmas',
+  templateUrl: './christmas.component.html',
+  styleUrl: './christmas.component.scss',
   standalone: true,
   imports: [
     RouterOutlet,
@@ -26,12 +26,12 @@ import { RouterLink, RouterOutlet } from '@angular/router';
     RouterLink
   ]
 })
-export class MainComponent {
+export class ChristmasComponent {
   private breakpointObserver = inject(BreakpointObserver);
 
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
       shareReplay()
-    );
+  );
 }

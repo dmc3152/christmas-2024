@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { MainComponent } from './main/main.component';
+import { ChristmasComponent } from './christmas/christmas.component';
 import { AgendaComponent } from './agenda/agenda.component';
 import { BuzzerComponent } from './buzzer/buzzer.component';
 
 export const routes: Routes = [
     {
-        path: 'main',
-        component: MainComponent,
+        path: 'christmas',
+        component: ChristmasComponent,
         children: [
             {
                 path: '',
@@ -23,5 +23,5 @@ export const routes: Routes = [
             }
         ]
     },
-    { path: '**', redirectTo: 'main' }
+    { path: '**', redirectTo: 'christmas' }
 ];
