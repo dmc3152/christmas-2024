@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { ChristmasComponent } from './christmas/christmas.component';
 import { AgendaComponent } from './agenda/agenda.component';
 import { BuzzerComponent } from './buzzer/buzzer.component';
+import { LyricsComponent } from './lyrics/lyrics.component';
 
 export const routes: Routes = [
     {
@@ -19,7 +20,11 @@ export const routes: Routes = [
             },
             {
                 path: 'buzzer',
-                component: BuzzerComponent,
+                component: BuzzerComponent
+            },
+            {
+                path: 'lyrics',
+                component: LyricsComponent
             }
         ]
     },

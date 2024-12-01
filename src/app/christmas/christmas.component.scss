@@ -8,10 +8,6 @@
     height: 100%;
 }
 
-.sidenav {
-    width: 200px;
-}
-
 .sidenav .mat-toolbar {
     background: inherit;
 }
@@ -58,4 +54,10 @@ footer {
     font: var(--mat-sys-body-small);
     background-color: rgba(#181c22, 0.75);
     backdrop-filter: blur(3px);
+}
+
+:host {
+  @include mat.sidenav-overrides((
+    container-width: 300px
+  ));
 }
