@@ -9,7 +9,7 @@
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-out;
     box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
     /* Add a subtle shadow */
     -webkit-touch-callout: none;
@@ -45,6 +45,7 @@
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
     /* Increase shadow intensity */
     transform: scale(0.95);
+    transition: all 0.01s ease-in;
 }
 
 .buzzer-button.disabled {
