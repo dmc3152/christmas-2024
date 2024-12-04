@@ -99,6 +99,7 @@ export class BuzzerComponent implements OnInit {
     this._sound = new Howl({
       src: [file],
       loop: true,
+      html5: true,
     });
 
     this._sound.on('playerror', () => {
