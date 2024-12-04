@@ -100,6 +100,12 @@ export class BuzzerComponent implements OnInit {
       src: [file],
       loop: true,
     });
+
+    this._sound.on('playerror', () => {
+      this._sound?.once('unlock', () => {
+        this._sound?.play();
+      });
+    });
   }
 
   private _getRandomSound = (sounds: string[]): string => {
