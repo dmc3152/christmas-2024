@@ -16,13 +16,18 @@
 
     <mat-card appearance="raised">
         <mat-card-content>
-            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" [disabled]="isDisabled()">
-                <span class="buzzer-label">Press Me</span>
-            </button>
             @if (isDisabled()) {
                 @for (item of buzzerAvailability().reason; track $index) {
                 <span>{{item}}</span>
                 }
+            }
+
+            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" [disabled]="isDisabled()">
+                <span class="buzzer-label">Press Me</span>
+            </button>
+
+            @if (!isDisabled()) {
+                <button mat-button (click)="loadSound()">Change Sound</button>
             }
         </mat-card-content>
     </mat-card>
