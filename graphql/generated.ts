@@ -25,20 +25,26 @@ export type Buzzer = {
   creator: UnauthenticatedUser;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  presses: Array<BuzzerPresses>;
+  presses: Array<BuzzerPress>;
   state: BuzzerState;
 };
 
 export type BuzzerAvailability = {
   __typename?: 'BuzzerAvailability';
   isAvailable: Scalars['Boolean']['output'];
-  reason?: Maybe<Array<Scalars['String']['output']>>;
+  isPressed: Scalars['Boolean']['output'];
 };
 
-export type BuzzerPresses = {
-  __typename?: 'BuzzerPresses';
+export type BuzzerPress = {
+  __typename?: 'BuzzerPress';
   pressedAt: Scalars['DateTime']['output'];
   user: UnauthenticatedUser;
+};
+
+export type BuzzerPressSubscription = {
+  __typename?: 'BuzzerPressSubscription';
+  action: Scalars['String']['output'];
+  presses?: Maybe<Array<BuzzerPress>>;
 };
 
 export enum BuzzerState {
@@ -48,8 +54,14 @@ export enum BuzzerState {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  pressBuzzer: Scalars['Boolean']['output'];
   signInAsUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
   updateUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
+};
+
+
+export type MutationPressBuzzerArgs = {
+  code: Scalars['String']['input'];
 };
 
 
@@ -82,7 +94,7 @@ export type QueryUserArgs = {
 export type Subscription = {
   __typename?: 'Subscription';
   buzzerAvailability: BuzzerAvailability;
-  countdown: Scalars['Int']['output'];
+  buzzerPresses: BuzzerPressSubscription;
 };
 
 
@@ -91,8 +103,8 @@ export type SubscriptionBuzzerAvailabilityArgs = {
 };
 
 
-export type SubscriptionCountdownArgs = {
-  from: Scalars['Int']['input'];
+export type SubscriptionBuzzerPressesArgs = {
+  id: Scalars['ID']['input'];
 };
 
 export type UnauthenticatedUser = {
@@ -106,7 +118,7 @@ export type GetBuzzerByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBuzzerByIdQuery = { __typename?: 'Query', buzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, creator: { __typename?: 'UnauthenticatedUser', id: string, name: string }, presses: Array<{ __typename?: 'BuzzerPresses', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+export type GetBuzzerByIdQuery = { __typename?: 'Query', buzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, creator: { __typename?: 'UnauthenticatedUser', id: string, name: string }, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
 
 export type GetUnauthenticatedSelfQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -127,19 +139,26 @@ export type UpdateUnauthenticatedUserMutationVariables = Exact<{
 
 export type UpdateUnauthenticatedUserMutation = { __typename?: 'Mutation', updateUnauthenticatedUser?: { __typename?: 'UnauthenticatedUser', id: string, name: string } | null };
 
-export type SubscriptionSubscriptionVariables = Exact<{
-  from: Scalars['Int']['input'];
-}>;
-
-
-export type SubscriptionSubscription = { __typename?: 'Subscription', countdown: number };
-
 export type BuzzerAvailabilitySubscriptionVariables = Exact<{
   code: Scalars['String']['input'];
 }>;
 
 
-export type BuzzerAvailabilitySubscription = { __typename?: 'Subscription', buzzerAvailability: { __typename?: 'BuzzerAvailability', isAvailable: boolean, reason?: Array<string> | null } };
+export type BuzzerAvailabilitySubscription = { __typename?: 'Subscription', buzzerAvailability: { __typename?: 'BuzzerAvailability', isAvailable: boolean, isPressed: boolean } };
+
+export type PressBuzzerMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type PressBuzzerMutation = { __typename?: 'Mutation', pressBuzzer: boolean };
+
+export type BuzzerPressesSubscriptionVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type BuzzerPressesSubscription = { __typename?: 'Subscription', buzzerPresses: { __typename?: 'BuzzerPressSubscription', action: string, presses?: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> | null } };
 
 export const GetBuzzerByIdDocument = gql`
     query GetBuzzerById($buzzerId: ID!) {
@@ -230,27 +249,11 @@ export const UpdateUnauthenticatedUserDocument = gql`
       super(apollo);
     }
   }
-export const SubscriptionDocument = gql`
-    subscription Subscription($from: Int!) {
-  countdown(from: $from)
-}
-    `;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class SubscriptionGQL extends Apollo.Subscription<SubscriptionSubscription, SubscriptionSubscriptionVariables> {
-    document = SubscriptionDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
 export const BuzzerAvailabilityDocument = gql`
     subscription BuzzerAvailability($code: String!) {
   buzzerAvailability(code: $code) {
     isAvailable
-    reason
+    isPressed
   }
 }
     `;
@@ -260,6 +263,47 @@ export const BuzzerAvailabilityDocument = gql`
   })
   export class BuzzerAvailabilityGQL extends Apollo.Subscription<BuzzerAvailabilitySubscription, BuzzerAvailabilitySubscriptionVariables> {
     document = BuzzerAvailabilityDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const PressBuzzerDocument = gql`
+    mutation PressBuzzer($code: String!) {
+  pressBuzzer(code: $code)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class PressBuzzerGQL extends Apollo.Mutation<PressBuzzerMutation, PressBuzzerMutationVariables> {
+    document = PressBuzzerDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const BuzzerPressesDocument = gql`
+    subscription BuzzerPresses($id: ID!) {
+  buzzerPresses(id: $id) {
+    action
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class BuzzerPressesGQL extends Apollo.Subscription<BuzzerPressesSubscription, BuzzerPressesSubscriptionVariables> {
+    document = BuzzerPressesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

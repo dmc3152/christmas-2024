@@ -1,0 +1,31 @@
+<div class="container">
+    <mat-card appearance="raised">
+        <mat-card-content class="card-top">
+            <form [formGroup]="form">
+                <mat-selection-list #presses [formControl]="buzzerPressesControl" name="buzzerPresses" >
+                    @for (press of buzzerPresses(); track press) {
+                    <mat-list-option [value]="press.user.id">
+                        <span style="display: flex; flex-direction: column;">
+                            <span>{{press.user.name}}</span>
+                            <small><i>{{press.time}}</i></small>
+                        </span>
+                    </mat-list-option>
+                    }
+                </mat-selection-list>
+            </form>
+        </mat-card-content>
+        <mat-card-actions class="card-bottom">
+            <button mat-button (click)="clearSelected()" [disabled]="!isClearSelectedEnabled()">Clear Selected</button>
+            <!-- <button mat-button>Lock Buzzer</button> -->
+            <!-- <button mat-button>Enable Buzzer</button> -->
+        </mat-card-actions>
+    </mat-card>
+
+    <mat-card appearance="raised">
+        <mat-card-actions class="card-top card-bottom">
+            <button mat-button>Clear All</button>
+            <button mat-button>Lock Buzzer</button>
+            <!-- <button mat-button>Enable Buzzer</button> -->
+        </mat-card-actions>
+    </mat-card>
+</div>

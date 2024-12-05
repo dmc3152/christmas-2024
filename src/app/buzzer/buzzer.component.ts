@@ -6,13 +6,17 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { catchError, debounceTime, distinctUntilChanged, EMPTY, firstValueFrom, map, Observable, shareReplay, Subscription, take } from 'rxjs';
-import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, SignInAsUnauthenticatedUserGQL, SignInAsUnauthenticatedUserMutationVariables } from '../../../graphql/generated';
+import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL, SignInAsUnauthenticatedUserGQL, SignInAsUnauthenticatedUserMutationVariables } from '../../../graphql/generated';
 import { Howl, Howler } from 'howler';
 import { MatButtonModule } from '@angular/material/button';
+import 'hammerjs';
+import { HammerModule } from '@angular/platform-browser';
+import { MatDialog } from '@angular/material/dialog';
+import { LoginModalComponent } from '../login-modal/login-modal.component';
 
 @Component({
   selector: 'app-buzzer',
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
+  imports: [MatCardModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule, HammerModule],
   providers: [Document],
   templateUrl: './buzzer.component.html',
   styleUrl: './buzzer.component.scss',
@@ -23,6 +27,8 @@ export class BuzzerComponent implements OnInit {
   private signInAsUnauthenticatedUser = inject(SignInAsUnauthenticatedUserGQL);
   private getUnauthenticatedSelf = inject(GetUnauthenticatedSelfGQL);
   private buzzerAvailabilityQuery = inject(BuzzerAvailabilityGQL);
+  private pressBuzzerMutation = inject(PressBuzzerGQL);
+  private dialog = inject(MatDialog);
 
   private _buzzerSubscription?: Subscription;
   private _soundLibrary = [
@@ -63,7 +69,7 @@ export class BuzzerComponent implements OnInit {
     effect(() => {
       if (!this.userName() || !this.buzzerCode()) {
         this._closeBuzzerSubscription();
-        this.buzzerAvailability.set({ isAvailable: false, reason: ['Enter your name and code'] });
+        this.buzzerAvailability.set({ isAvailable: false, isPressed: false });
         return;
       }
 
@@ -72,7 +78,7 @@ export class BuzzerComponent implements OnInit {
       if (!code) return;
       this._buzzerSubscription = this.buzzerAvailabilityQuery.subscribe({ code }).pipe(map(result => result.data?.buzzerAvailability))
         .subscribe(buzzerAvailability => {
-          this.buzzerAvailability.set(buzzerAvailability || { isAvailable: false });
+          this.buzzerAvailability.set(buzzerAvailability || { isAvailable: false, isPressed: false });
         });
     });
   }
@@ -131,7 +137,7 @@ export class BuzzerComponent implements OnInit {
   }
 
   buzzerSubscription = signal<Observable<number | undefined>>(EMPTY);
-  buzzerAvailability = signal<BuzzerAvailabilitySubscription['buzzerAvailability']>({isAvailable: false});
+  buzzerAvailability = signal<BuzzerAvailabilitySubscription['buzzerAvailability']>({isAvailable: false, isPressed: false});
 
   isLarge$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Large)
     .pipe(
@@ -157,19 +163,36 @@ export class BuzzerComponent implements OnInit {
     distinctUntilChanged()
   ));
 
-  nameIsPresent = computed(() => !!this.userName());
-  codeIsPresent = computed(() => !!this.buzzerCode());
   isDisabled = computed(() => !this.buzzerAvailability().isAvailable);
-
-  buzzerSession = computed(() => {
-    if (!this.nameIsPresent() || !this.codeIsPresent()) return null;
-
-
-    return null;
+  buzzerText = computed(() => {
+    if (!this.userName() || !this.buzzerCode()) return 'Please enter the game code';
+    return this.isDisabled() ? 'Buzzer is locked' : 'Press Me';
   })
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(LoginModalComponent, {
+      data: { name: this.formGroup.controls.name.value },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+        this.formGroup.controls.name.patchValue(result);
+      }
+    });
+  }
 
   pressButton() {
     this._sound?.play();
+    const code = this.buzzerCode();
+    if (!this.buzzerAvailability().isPressed && code) {
+      this.pressBuzzerMutation
+        .mutate({ code })
+        .subscribe(result => {
+          if (!result.data?.pressBuzzer) {
+            console.error('Failed to press buzzer');
+          }
+        });
+    }
   }
 
   releaseButton() {

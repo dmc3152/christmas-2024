@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideExperimentalZonelessChangeDetection, inject } from '@angular/core';
+import { ApplicationConfig, provideExperimentalZonelessChangeDetection, inject, importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -10,6 +10,9 @@ import { ApolloLink, InMemoryCache, Observable, Operation, split } from '@apollo
 import { Kind, OperationTypeNode, print } from 'graphql';
 import { createClient, ClientOptions, Client, ExecutionResult } from 'graphql-sse';
 import { getMainDefinition } from '@apollo/client/utilities';
+import { HammerModule } from '@angular/platform-browser';
+import 'hammerjs';
+import { environment } from '../environments/environment';
 
 
 class SSELink extends ApolloLink {
@@ -37,18 +40,19 @@ class SSELink extends ApolloLink {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideExperimentalZonelessChangeDetection(),
+    importProvidersFrom(HammerModule),
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(),
     provideApollo(() => {
       const httpLink = inject(HttpLink);
       const http = httpLink.create({
-        uri: 'https://bluesea.com:3000/graphql',
+        uri: environment.apiUrl,
         withCredentials: true,
       });
 
       const sse = new SSELink({
-        url: 'https://bluesea.com:3000/graphql',
+        url: environment.apiUrl,
         credentials: 'include',
       });
 

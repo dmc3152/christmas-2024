@@ -7,7 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "generate": "graphql-codegen"
+    "generate": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 graphql-codegen"
   },
   "private": true,
   "dependencies": {
@@ -25,6 +25,7 @@
     "apollo-angular": "^8.0.0",
     "graphql": "^16.9.0",
     "graphql-sse": "^2.5.3",
+    "hammerjs": "^2.0.8",
     "howler": "^2.2.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -39,6 +40,7 @@
     "@graphql-codegen/typescript-operations": "^4.4.0",
     "@types/howler": "^2.2.12",
     "@types/jasmine": "~5.1.0",
+    "cross-env": "^7.0.3",
     "jasmine-core": "~5.4.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

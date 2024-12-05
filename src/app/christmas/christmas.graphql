@@ -42,6 +42,23 @@ mutation UpdateUnauthenticatedUser($name: String!) {
 subscription BuzzerAvailability($code: String!) {
   buzzerAvailability(code: $code) {
     isAvailable
-    reason
+    isPressed
+  }
+}
+
+mutation PressBuzzer($code: String!) {
+  pressBuzzer(code: $code)
+}
+
+subscription BuzzerPresses($id: ID!) {
+  buzzerPresses(id: $id) {
+    action
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
   }
 }
