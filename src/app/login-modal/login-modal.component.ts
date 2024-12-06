@@ -20,7 +20,7 @@ export class LoginModalComponent {
 
   constructor(private dialogRef: MatDialogRef<LoginModalComponent>) { }
 
-  name = new FormControl(this.data.name, Validators.required);
+  name = new FormControl(this.data?.name, Validators.required);
 
   onCancel() {
     this.dialogRef.close();
