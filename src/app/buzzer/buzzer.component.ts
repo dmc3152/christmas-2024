@@ -5,7 +5,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { catchError, debounceTime, distinctUntilChanged, EMPTY, firstValueFrom, map, Observable, shareReplay, Subscription, take } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, EMPTY, firstValueFrom, interval, map, Observable, shareReplay, Subscription, take } from 'rxjs';
 import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL, SignInAsUnauthenticatedUserGQL, SignInAsUnauthenticatedUserMutationVariables } from '../../../graphql/generated';
 import { Howl, Howler } from 'howler';
 import { MatButtonModule } from '@angular/material/button';
@@ -104,7 +104,6 @@ export class BuzzerComponent implements OnInit {
     const file = this._getRandomSound([...this._soundLibrary]);
     this._sound = new Howl({
       src: [file],
-      loop: true,
       html5: true,
     });
 
@@ -181,8 +180,18 @@ export class BuzzerComponent implements OnInit {
     });
   }
 
+  interval!: ReturnType<typeof setInterval>;
+
   pressButton() {
+    this._sound?.stop();
     this._sound?.play();
+
+    const duration = this._sound?.duration();
+
+    this.interval = setInterval(() => {
+      this._sound?.play();
+    }, duration);
+    
     const code = this.buzzerCode();
     if (!this.buzzerAvailability().isPressed && code) {
       this.pressBuzzerMutation
