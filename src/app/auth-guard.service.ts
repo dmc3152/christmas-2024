@@ -1,39 +1,42 @@
-import { inject, Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { inject } from '@angular/core';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, Router, RedirectCommand } from '@angular/router';
 import { catchError, firstValueFrom, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { LoginModalComponent } from './login-modal/login-modal.component';
 import { GetUnauthenticatedSelfGQL } from '../../graphql/generated';
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthGuard implements CanActivate {
-  private getUnauthenticatedSelf = inject(GetUnauthenticatedSelfGQL);
-  private dialog = inject(MatDialog);
+export const AuthGuard = async (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  const router = inject(Router);
+  const dialog = inject(MatDialog);
 
-  constructor() { }
-
-  async canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-    if (await this.isAuthenticated()) {
-      return true;
-    } else {
-      const dialogRef = this.dialog.open(LoginModalComponent, { disableClose: true });
-      return !!firstValueFrom(dialogRef.afterClosed());
-    }
+  if (await isAuthenticated()) {
+    return true;
   }
 
-  private isAuthenticated = async (): Promise<boolean> => {
-    const result = await firstValueFrom(this.getUnauthenticatedSelf.fetch()
-      .pipe(
-        catchError(() => of({
-          data: {
-            unauthenticatedSelf: {
-              name: ''
-            }
-          }
-        }))
-      ));
-    return !!result.data.unauthenticatedSelf?.name;
+  const dialogRef = dialog.open(LoginModalComponent, { disableClose: true });
+  const value = await firstValueFrom(dialogRef.afterClosed());
+  if (value) {
+    return true;
   }
+  
+  const urlTree = router.parseUrl('/christmas');
+  return new RedirectCommand(urlTree);
 }
+
+const isAuthenticated = async (): Promise<boolean> => {
+  const getUnauthenticatedSelf = inject(GetUnauthenticatedSelfGQL);
+
+  const result = await firstValueFrom(getUnauthenticatedSelf.fetch()
+    .pipe(
+      catchError(() => of({
+        data: {
+          unauthenticatedSelf: {
+            name: ''
+          }
+        }
+      }))
+  ));
+  console.log('auth guard', result.data.unauthenticatedSelf?.name)
+  return !!result.data.unauthenticatedSelf?.name;
+}
+

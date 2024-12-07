@@ -5,7 +5,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { SignInAsUnauthenticatedUserGQL } from '../../../graphql/generated';
+import { GetUnauthenticatedSelfDocument, SignInAsUnauthenticatedUserGQL } from '../../../graphql/generated';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -29,7 +29,22 @@ export class LoginModalComponent {
   onSubmit = async () => {
     if (this.name.invalid || !this.name.value) return;
 
-    const result = await firstValueFrom(this.signInAsUnauthenticatedUserMutation.mutate({ name: this.name.value }));
+    const result = await firstValueFrom(
+      this.signInAsUnauthenticatedUserMutation
+        .mutate(
+          { name: this.name.value },
+          {
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: GetUnauthenticatedSelfDocument,
+                data: {
+                  unauthenticatedSelf: data?.signInAsUnauthenticatedUser
+                }
+              });
+            }
+          }
+        )
+    );
     this.dialogRef.close(result.data?.signInAsUnauthenticatedUser?.name);
   }
 }
