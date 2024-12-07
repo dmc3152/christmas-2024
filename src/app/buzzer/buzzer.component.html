@@ -33,7 +33,7 @@
 
     <mat-card appearance="raised">
         <mat-card-content class="card-top" [class.card-bottom]="isDisabled()">
-            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" (press)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
+            <button class="buzzer-button" [class.disabled]="isDisabled()" (mouseup)="releaseButton()" (press)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
                 <span class="buzzer-label">{{buzzerText()}}</span>
             </button>
 
