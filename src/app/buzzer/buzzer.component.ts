@@ -180,17 +180,18 @@ export class BuzzerComponent implements OnInit {
     });
   }
 
-  interval!: ReturnType<typeof setInterval>;
+  // interval!: ReturnType<typeof setInterval>;
 
   pressButton() {
     this._sound?.stop();
     this._sound?.play();
 
-    const duration = this._sound?.duration();
+    // const duration = this._sound?.duration() || 0 + 200;
 
-    this.interval = setInterval(() => {
-      this._sound?.play();
-    }, duration);
+    // this.interval = setInterval(() => {
+    //   this._sound?.stop();
+    //   this._sound?.play();
+    // }, duration);
     
     const code = this.buzzerCode();
     if (!this.buzzerAvailability().isPressed && code) {
@@ -205,6 +206,11 @@ export class BuzzerComponent implements OnInit {
   }
 
   releaseButton() {
+    this._sound?.stop();
+    // clearInterval(this.interval);
+  }
+
+  stopSound() {
     this._sound?.stop();
   }
 }
