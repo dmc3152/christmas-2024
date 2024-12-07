@@ -1,27 +1,26 @@
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { catchError, debounceTime, distinctUntilChanged, EMPTY, firstValueFrom, interval, map, Observable, shareReplay, Subscription, take } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, EMPTY, firstValueFrom, map, Observable, shareReplay, Subscription } from 'rxjs';
 import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL, SignInAsUnauthenticatedUserGQL, SignInAsUnauthenticatedUserMutationVariables } from '../../../graphql/generated';
-import { Howl, Howler } from 'howler';
+import { Howl } from 'howler';
 import { MatButtonModule } from '@angular/material/button';
-import 'hammerjs';
-import { HammerModule } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
 
 @Component({
   selector: 'app-buzzer',
-  imports: [MatCardModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule, HammerModule],
+  imports: [MatCardModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatButtonModule],
   providers: [Document],
   templateUrl: './buzzer.component.html',
   styleUrl: './buzzer.component.scss',
 })
 export class BuzzerComponent implements OnInit {
+  private _destroyRef = inject(DestroyRef);
   private breakpointObserver = inject(BreakpointObserver);
   private _document = inject(Document);
   private signInAsUnauthenticatedUser = inject(SignInAsUnauthenticatedUserGQL);
@@ -84,7 +83,7 @@ export class BuzzerComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.getUnauthenticatedSelf.fetch().pipe(take(1)).subscribe(result => {
+    this.getUnauthenticatedSelf.watch().valueChanges.pipe(takeUntilDestroyed(this._destroyRef)).subscribe(result => {
       if (result.data.unauthenticatedSelf?.name) {
         this.formGroup.controls.name.patchValue(result.data.unauthenticatedSelf.name);
       }
@@ -105,6 +104,7 @@ export class BuzzerComponent implements OnInit {
     this._sound = new Howl({
       src: [file],
       html5: true,
+      loop: true
     });
 
     this._sound.on('playerror', () => {
@@ -174,6 +174,7 @@ export class BuzzerComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed', result);
       if (result !== undefined) {
         this.formGroup.controls.name.patchValue(result);
       }

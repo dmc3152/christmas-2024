@@ -6,7 +6,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient } from '@angular/common/http';
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { ApolloLink, InMemoryCache, Observable, Operation, split } from '@apollo/client/core';
+import { ApolloClient, ApolloClientOptions, ApolloLink, InMemoryCache, NormalizedCacheObject, Observable, Operation, split } from '@apollo/client/core';
 import { Kind, OperationTypeNode, print } from 'graphql';
 import { createClient, ClientOptions, Client, ExecutionResult } from 'graphql-sse';
 import { getMainDefinition } from '@apollo/client/utilities';
@@ -14,6 +14,11 @@ import { HammerModule } from '@angular/platform-browser';
 import 'hammerjs';
 import { environment } from '../environments/environment';
 
+declare global {
+  interface Window {
+    __APOLLO_CLIENT__: ApolloClient<any>;
+  }
+}
 
 class SSELink extends ApolloLink {
   private client: Client;
@@ -46,6 +51,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(),
     provideApollo(() => {
       const httpLink = inject(HttpLink);
+
       const http = httpLink.create({
         uri: environment.apiUrl,
         withCredentials: true,
@@ -69,11 +75,13 @@ export const appConfig: ApplicationConfig = {
         http,
       );
 
-      return {
+      const client: ApolloClientOptions<NormalizedCacheObject> = {
         link,
         cache: new InMemoryCache(),
         // other options...
       };
+
+      return client;
     })
   ]
 };

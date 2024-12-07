@@ -32,8 +32,8 @@
     <!-- </mat-card> -->
 
     <mat-card appearance="raised">
-        <mat-card-content class="card-top card-bottom">
-            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" [disabled]="isDisabled()">
+        <mat-card-content class="card-top" [class.card-bottom]="isDisabled()">
+            <button class="buzzer-button" [class.disabled]="isDisabled()" (press)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
                 <span class="buzzer-label">{{buzzerText()}}</span>
             </button>
 
@@ -41,10 +41,12 @@
                 <span>Buzzer has been pressed</span>
             }
 
-            @if (!isDisabled()) {
-                <button mat-button (click)="loadSound()">Change Sound</button>
-                <button mat-button (click)="stopSound()">Stop Sound</button>
-            }
         </mat-card-content>
+        @if (!isDisabled()) {
+        <mat-card-actions class="card-bottom">
+            <button mat-button (click)="loadSound()">Change Sound</button>
+            <button mat-button (click)="stopSound()">Stop Sound</button>
+        </mat-card-actions>
+        }
     </mat-card>
 </div>
