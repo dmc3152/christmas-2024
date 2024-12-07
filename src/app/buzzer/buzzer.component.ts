@@ -6,7 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { debounceTime, distinctUntilChanged, EMPTY, map, Observable, shareReplay, Subscription } from 'rxjs';
-import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL, SignInAsUnauthenticatedUserGQL } from '../../../graphql/generated';
+import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL } from '../../../graphql/generated';
 import { Howl } from 'howler';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -21,7 +21,6 @@ import { LoginModalComponent } from '../login-modal/login-modal.component';
 })
 export class BuzzerComponent {
   private breakpointObserver = inject(BreakpointObserver);
-  private signInAsUnauthenticatedUser = inject(SignInAsUnauthenticatedUserGQL);
   private getUnauthenticatedSelf = inject(GetUnauthenticatedSelfGQL);
   private buzzerAvailabilityQuery = inject(BuzzerAvailabilityGQL);
   private pressBuzzerMutation = inject(PressBuzzerGQL);
@@ -163,7 +162,8 @@ export class BuzzerComponent {
   }
 
   pressButton() {
-    this._sound?.stop();
+    if (this._sound?.playing()) return;
+    
     this._sound?.play();
 
     const code = this.buzzerCode();

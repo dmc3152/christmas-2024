@@ -1,12 +1,12 @@
 <div class="container">
     <mat-card appearance="raised">
         <mat-card-content class="card-top align-left">
+            <span>Name: {{formGroup.controls.name.value}}</span>
             <mat-form-field>
                 <mat-label for="code">Buzzer Code</mat-label>
                 <input matInput id="code" type="text" [formControl]="formGroup.controls.code">
                 <mat-hint>Provided by the game host</mat-hint>
             </mat-form-field>
-            <span>Name: {{formGroup.controls.name.value}}</span>
         </mat-card-content>
         <mat-card-actions class="card-bottom">
             <button mat-button (click)="openDialog()">Change Name</button>
@@ -33,7 +33,7 @@
 
     <mat-card appearance="raised">
         <mat-card-content class="card-top" [class.card-bottom]="isDisabled()">
-            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
+            <button class="buzzer-button" [class.disabled]="isDisabled()" (mousedown)="pressButton()" (mouseup)="releaseButton()" (press)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
                 <span class="buzzer-label">{{buzzerText()}}</span>
             </button>
 
