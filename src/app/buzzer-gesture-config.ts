@@ -8,5 +8,8 @@ export class BuzzerHammerConfig extends HammerGestureConfig {
             time: 100,
             threshold: 50,
         },
+        pressup: {
+            threshold: 200,
+        }
     };
 }
