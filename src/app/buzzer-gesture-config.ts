@@ -6,7 +6,7 @@ export class BuzzerHammerConfig extends HammerGestureConfig {
     override overrides = {
         press: {
             time: 100,
-            threshold: 200,
+            threshold: 50,
         },
     };
 }
