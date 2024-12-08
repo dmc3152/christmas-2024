@@ -10,9 +10,10 @@ import { ApolloClient, ApolloClientOptions, ApolloLink, InMemoryCache, Normalize
 import { Kind, OperationTypeNode, print } from 'graphql';
 import { createClient, ClientOptions, Client, ExecutionResult } from 'graphql-sse';
 import { getMainDefinition } from '@apollo/client/utilities';
-import { HammerModule } from '@angular/platform-browser';
+import { HAMMER_GESTURE_CONFIG, HammerModule } from '@angular/platform-browser';
 import 'hammerjs';
 import { environment } from '../environments/environment';
+import { BuzzerHammerConfig } from './buzzer-gesture-config';
 
 declare global {
   interface Window {
@@ -46,6 +47,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideExperimentalZonelessChangeDetection(),
     importProvidersFrom(HammerModule),
+    {
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: BuzzerHammerConfig
+    },
     provideRouter(routes),
     provideAnimationsAsync(),
     provideHttpClient(),
