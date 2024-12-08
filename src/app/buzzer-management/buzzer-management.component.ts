@@ -1,12 +1,14 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { map } from 'rxjs';
-import { BuzzerPress, BuzzerPressesGQL } from '../../../graphql/generated';
+import { firstValueFrom, map, Subscription } from 'rxjs';
+import { BuzzerPress, BuzzerPressesGQL, ClearAllBuzzerPressesGQL, ClearSelectedBuzzerPressesGQL, CreateBuzzerGQL, LockBuzzerGQL, MyBuzzerDocument, MyBuzzerGQL, UnlockBuzzerGQL, UpdateBuzzerCodeGQL } from '../../../graphql/generated';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 export type BuzzerPressWithTime = BuzzerPress & {
   time: string
@@ -14,58 +16,86 @@ export type BuzzerPressWithTime = BuzzerPress & {
 
 @Component({
   selector: 'app-buzzer-management',
-  imports: [MatCardModule, MatButtonModule, MatListModule, MatIconModule, FormsModule, ReactiveFormsModule],
+  imports: [MatCardModule, MatButtonModule, MatListModule, MatFormFieldModule, MatInputModule, MatIconModule, FormsModule, ReactiveFormsModule],
   templateUrl: './buzzer-management.component.html',
   styleUrl: './buzzer-management.component.scss'
 })
-export class BuzzerManagementComponent implements OnInit {
-  private buzzerPressesGql = inject(BuzzerPressesGQL)
+export class BuzzerManagementComponent {
+  private buzzerPressesGql = inject(BuzzerPressesGQL);
+  private myBuzzerGql = inject(MyBuzzerGQL);
+  private createBuzzerGql = inject(CreateBuzzerGQL);
+  private updateBuzzerCodeGql = inject(UpdateBuzzerCodeGQL);
+  private lockBuzzerGql = inject(LockBuzzerGQL);
+  private unlockBuzzerGql = inject(UnlockBuzzerGQL);
+  private clearSelectedBuzzerPressesGql = inject(ClearSelectedBuzzerPressesGQL);
+  private clearAllBuzzerPressesGql = inject(ClearAllBuzzerPressesGQL);
 
   form: FormGroup;
   buzzerPresses = signal<BuzzerPressWithTime[]>([]);
-  buzzerPressesControl = new FormControl<number[]>([]);
+  buzzerPressesControl = new FormControl<string[]>([]);
   isClearSelectedEnabled = toSignal(this.buzzerPressesControl.valueChanges.pipe(map(x => x ? x.length > 0 : false)));
   // isLocked = toSignal()
+  buzzerForm = new FormGroup({
+    code: new FormControl('', Validators.required),
+  });
+  myBuzzer = toSignal(this.myBuzzerGql.watch().valueChanges.pipe(map(result => result.data?.myBuzzer)));
+  private _buzzerSubscription?: Subscription;
 
   constructor() {
     this.form = new FormGroup({
       responses: this.buzzerPressesControl
     });
+
+    effect(() => {
+      const myBuzzer = this.myBuzzer();
+      console.log('myBuzzer', myBuzzer);
+      if (!myBuzzer?.name) return;
+      const code = myBuzzer.name;
+      this.buzzerForm.controls.code.setValue(code);
+    });
+
+    effect(() => {
+      this._closeBuzzerSubscription();
+      const code = this.myBuzzer()?.name;
+      if (!code) return;
+
+      this._buzzerSubscription = this.buzzerPressesGql.subscribe({ code })
+        .subscribe(result => {
+          if (!result.data?.buzzerPresses.action) return;
+          if (!result.data?.buzzerPresses.presses) return;
+          if (result.data.buzzerPresses.action === 'HEARTBEAT') return;
+          if (result.data.buzzerPresses.action === 'INITIAL') {
+            this.buzzerPresses.set(this.compareDateTimes(result.data.buzzerPresses.presses));
+          }
+          if (result.data.buzzerPresses.action === 'DELETE') {
+            const deletedIdLookup = result.data.buzzerPresses.presses.reduce(
+              (lookup, press) => {
+                lookup[press.user.id] = true;
+                return lookup;
+              },
+              {} as Record<string, boolean>
+            )
+            this.buzzerPresses.set(this.compareDateTimes(this.buzzerPresses().filter(press => !deletedIdLookup[press.user.id])));
+          }
+          if (result.data.buzzerPresses.action === 'CREATE') {
+            this.buzzerPresses.set(this.compareDateTimes([...this.buzzerPresses(), ...result.data.buzzerPresses.presses]));
+          }
+          if (result.data.buzzerPresses.action === 'UPDATE') {
+            const updateLookup = result.data.buzzerPresses.presses.reduce(
+              (lookup, press) => {
+                lookup[press.user.id] = press;
+                return lookup;
+              },
+              {} as Record<string, BuzzerPress>
+            )
+            this.buzzerPresses.set(this.compareDateTimes(this.buzzerPresses().map(press => updateLookup[press.user.id] || press)));
+          }
+        });
+    });
   }
 
-  ngOnInit() {
-    this.buzzerPressesGql.subscribe({ id: 'test' })
-      .subscribe(result => {
-        if (!result.data?.buzzerPresses.action) return;
-        if (!result.data?.buzzerPresses.presses) return;
-        if (result.data.buzzerPresses.action === 'HEARTBEAT') return;
-        if (result.data.buzzerPresses.action === 'INITIAL') {
-          this.buzzerPresses.set(this.compareDateTimes(result.data.buzzerPresses.presses));
-        }
-        if (result.data.buzzerPresses.action === 'DELETE') {
-          const deletedIdLookup = result.data.buzzerPresses.presses.reduce(
-            (lookup, press) => {
-              lookup[press.user.id] = true;
-              return lookup;
-            },
-            {} as Record<string, boolean>
-          )
-          this.buzzerPresses.set(this.compareDateTimes(this.buzzerPresses().filter(press => !deletedIdLookup[press.user.id])));
-        }
-        if (result.data.buzzerPresses.action === 'CREATE') {
-          this.buzzerPresses.set(this.compareDateTimes([...this.buzzerPresses(), ...result.data.buzzerPresses.presses]));
-        }
-        if (result.data.buzzerPresses.action === 'UPDATE') {
-          const updateLookup = result.data.buzzerPresses.presses.reduce(
-            (lookup, press) => {
-              lookup[press.user.id] = press;
-              return lookup;
-            },
-            {} as Record<string, BuzzerPress>
-          )
-          this.buzzerPresses.set(this.compareDateTimes(this.buzzerPresses().map(press => updateLookup[press.user.id] || press)));
-        }
-      });
+  ngOnDestroy() {
+    this._closeBuzzerSubscription();
   }
 
   compareDateTimes = (buzzerPresses: BuzzerPress[]): BuzzerPressWithTime[] => {
@@ -113,26 +143,125 @@ export class BuzzerManagementComponent implements OnInit {
     return timeString.join(', ');
   }
 
-  clearSelected = () => {
-    const lookup = (this.buzzerPressesControl.value || []).reduce((lookup, id) => {
-      lookup[id] = true;
-      return lookup;
-    }, {} as Record<string, boolean>);
+  createBuzzer = async () => {
+    const code = this.buzzerForm.controls.code.value;
+    if (!code) return;
 
-    this.buzzerPresses.set(this.buzzerPresses().filter(press => !lookup[press.user.id]));
-    this.buzzerPressesControl.setValue([])
+    try {
+      await firstValueFrom(
+        this.createBuzzerGql.mutate(
+          { code },
+          {
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: MyBuzzerDocument,
+                data: {
+                  myBuzzer: data?.createBuzzer
+                }
+              });
+            }
+          }
+        )
+      );
+    } catch (error) { }
   }
 
-  clearAll = () => {
-    this.buzzerPresses.set([]);
-    this.buzzerPressesControl.setValue([])
+  updateBuzzerCode = async () => {
+    const code = this.buzzerForm.controls.code.value;
+    if (!code) return;
+
+    try {
+      await firstValueFrom(
+        this.updateBuzzerCodeGql.mutate(
+          { code },
+          {
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: MyBuzzerDocument,
+                data: {
+                  myBuzzer: data?.updateBuzzerCode
+                }
+              });
+            }
+          }
+        )
+      );
+    } catch (error) { }
   }
 
-  lockBuzzer = () => {
-    console.log('lock buzzer');
+  clearSelected = async () => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+    
+    const userIds = (this.buzzerPressesControl.value || []).filter(press => !!press);
+    if (!userIds.length) return;
+    
+    try {
+      await firstValueFrom(this.clearSelectedBuzzerPressesGql.mutate({ input: { code, userIds } }));
+      this.buzzerPressesControl.setValue([])
+    }
+    catch (error) { }
   }
 
-  unlockBuzzer = () => {
-    console.log('unlock buzzer');
+  clearAll = async () => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    try {
+      await firstValueFrom(this.clearAllBuzzerPressesGql.mutate({ code }));
+      this.buzzerPressesControl.setValue([])
+    } catch (error) { }
+  }
+
+  lockBuzzer = async () => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    try {
+      await firstValueFrom(
+        this.lockBuzzerGql.mutate(
+          { code },
+          {
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: MyBuzzerDocument,
+                data: {
+                  myBuzzer: data?.lockBuzzer
+                }
+              });
+            }
+          }
+        )
+      );
+    } catch (error) { }
+  }
+
+  unlockBuzzer = async () => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    try {
+      await firstValueFrom(
+        this.unlockBuzzerGql.mutate(
+          { code },
+          {
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: MyBuzzerDocument,
+                data: {
+                  myBuzzer: data?.unlockBuzzer
+                }
+              });
+            }
+          }
+        )
+      );
+    } catch (error) { }
+  }
+
+  private _closeBuzzerSubscription() {
+    if (this._buzzerSubscription) {
+      this._buzzerSubscription.unsubscribe();
+    }
   }
 }

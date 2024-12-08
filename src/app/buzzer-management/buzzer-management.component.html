@@ -1,6 +1,27 @@
 <div class="container">
     <mat-card appearance="raised">
         <mat-card-content class="card-top">
+            <form [formGroup]="buzzerForm" [style.width]="'100%'">
+                <mat-form-field [style.width]="'100%'">
+                    <mat-label for="code">Buzzer Code</mat-label>
+                    <input matInput id="code" type="text" [formControl]="buzzerForm.controls.code">
+                    <mat-hint>Participants use this code to connect to the buzzer</mat-hint>
+                </mat-form-field>
+            </form>
+        </mat-card-content>
+        <mat-card-actions class="card-bottom">
+            @if (!myBuzzer()?.name) {
+            <button mat-button (click)="createBuzzer()" [disabled]="!buzzerForm.valid">Create Buzzer</button>
+            }
+            @else {
+            <button mat-button (click)="updateBuzzerCode()" [disabled]="!buzzerForm.valid">Update Buzzer Code</button>
+            }
+        </mat-card-actions>
+    </mat-card>
+
+    @if (myBuzzer()?.name) {
+    <mat-card appearance="raised">
+        <mat-card-content class="card-top">
             <form [formGroup]="form">
                 <mat-selection-list #presses [formControl]="buzzerPressesControl" name="buzzerPresses" >
                     @for (press of buzzerPresses(); track press) {
@@ -16,16 +37,19 @@
         </mat-card-content>
         <mat-card-actions class="card-bottom">
             <button mat-button (click)="clearSelected()" [disabled]="!isClearSelectedEnabled()">Clear Selected</button>
-            <!-- <button mat-button>Lock Buzzer</button> -->
-            <!-- <button mat-button>Enable Buzzer</button> -->
         </mat-card-actions>
     </mat-card>
 
     <mat-card appearance="raised">
         <mat-card-actions class="card-top card-bottom">
-            <button mat-button>Clear All</button>
-            <button mat-button>Lock Buzzer</button>
-            <!-- <button mat-button>Enable Buzzer</button> -->
+            <button mat-button (click)="clearAll()">Clear All</button>
+            @if (myBuzzer()?.state === 'INACTIVE') {
+            <button mat-button (click)="unlockBuzzer()">Unlock Buzzer</button>
+            }
+            @else {
+            <button mat-button (click)="lockBuzzer()">Lock Buzzer</button>
+            }
         </mat-card-actions>
     </mat-card>
+    }
 </div>

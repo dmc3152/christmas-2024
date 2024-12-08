@@ -52,11 +52,42 @@ export enum BuzzerState {
   Inactive = 'INACTIVE'
 }
 
+export type ClearBuzzerPressesInput = {
+  code: Scalars['String']['input'];
+  userIds: Array<Scalars['ID']['input']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  clearAllBuzzerPresses: Array<BuzzerPress>;
+  clearBuzzerPresses: Array<BuzzerPress>;
+  createBuzzer?: Maybe<Buzzer>;
+  lockBuzzer?: Maybe<Buzzer>;
   pressBuzzer: Scalars['Boolean']['output'];
   signInAsUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
+  unlockBuzzer?: Maybe<Buzzer>;
+  updateBuzzerCode?: Maybe<Buzzer>;
   updateUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
+};
+
+
+export type MutationClearAllBuzzerPressesArgs = {
+  code: Scalars['String']['input'];
+};
+
+
+export type MutationClearBuzzerPressesArgs = {
+  input: ClearBuzzerPressesInput;
+};
+
+
+export type MutationCreateBuzzerArgs = {
+  code: Scalars['String']['input'];
+};
+
+
+export type MutationLockBuzzerArgs = {
+  code: Scalars['String']['input'];
 };
 
 
@@ -70,6 +101,16 @@ export type MutationSignInAsUnauthenticatedUserArgs = {
 };
 
 
+export type MutationUnlockBuzzerArgs = {
+  code: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateBuzzerCodeArgs = {
+  code: Scalars['String']['input'];
+};
+
+
 export type MutationUpdateUnauthenticatedUserArgs = {
   name: Scalars['String']['input'];
 };
@@ -77,13 +118,14 @@ export type MutationUpdateUnauthenticatedUserArgs = {
 export type Query = {
   __typename?: 'Query';
   buzzer?: Maybe<Buzzer>;
+  myBuzzer?: Maybe<Buzzer>;
   unauthenticatedSelf?: Maybe<UnauthenticatedUser>;
   user?: Maybe<UnauthenticatedUser>;
 };
 
 
 export type QueryBuzzerArgs = {
-  id: Scalars['ID']['input'];
+  code: Scalars['String']['input'];
 };
 
 
@@ -104,7 +146,7 @@ export type SubscriptionBuzzerAvailabilityArgs = {
 
 
 export type SubscriptionBuzzerPressesArgs = {
-  id: Scalars['ID']['input'];
+  code: Scalars['String']['input'];
 };
 
 export type UnauthenticatedUser = {
@@ -113,12 +155,59 @@ export type UnauthenticatedUser = {
   name: Scalars['String']['output'];
 };
 
-export type GetBuzzerByIdQueryVariables = Exact<{
-  buzzerId: Scalars['ID']['input'];
+export type MyBuzzerQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyBuzzerQuery = { __typename?: 'Query', myBuzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+
+export type CreateBuzzerMutationVariables = Exact<{
+  code: Scalars['String']['input'];
 }>;
 
 
-export type GetBuzzerByIdQuery = { __typename?: 'Query', buzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, creator: { __typename?: 'UnauthenticatedUser', id: string, name: string }, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+export type CreateBuzzerMutation = { __typename?: 'Mutation', createBuzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+
+export type UpdateBuzzerCodeMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type UpdateBuzzerCodeMutation = { __typename?: 'Mutation', updateBuzzerCode?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+
+export type LockBuzzerMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type LockBuzzerMutation = { __typename?: 'Mutation', lockBuzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+
+export type UnlockBuzzerMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type UnlockBuzzerMutation = { __typename?: 'Mutation', unlockBuzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
+
+export type ClearAllBuzzerPressesMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type ClearAllBuzzerPressesMutation = { __typename?: 'Mutation', clearAllBuzzerPresses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> };
+
+export type ClearSelectedBuzzerPressesMutationVariables = Exact<{
+  input: ClearBuzzerPressesInput;
+}>;
+
+
+export type ClearSelectedBuzzerPressesMutation = { __typename?: 'Mutation', clearBuzzerPresses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> };
+
+export type GetBuzzerByCodeQueryVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type GetBuzzerByCodeQuery = { __typename?: 'Query', buzzer?: { __typename?: 'Buzzer', id: string, name: string, state: BuzzerState, allowUserToClearResponse: boolean, creator: { __typename?: 'UnauthenticatedUser', id: string, name: string }, presses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> } | null };
 
 export type GetUnauthenticatedSelfQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -154,15 +243,199 @@ export type PressBuzzerMutationVariables = Exact<{
 export type PressBuzzerMutation = { __typename?: 'Mutation', pressBuzzer: boolean };
 
 export type BuzzerPressesSubscriptionVariables = Exact<{
-  id: Scalars['ID']['input'];
+  code: Scalars['String']['input'];
 }>;
 
 
 export type BuzzerPressesSubscription = { __typename?: 'Subscription', buzzerPresses: { __typename?: 'BuzzerPressSubscription', action: string, presses?: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> | null } };
 
-export const GetBuzzerByIdDocument = gql`
-    query GetBuzzerById($buzzerId: ID!) {
-  buzzer(id: $buzzerId) {
+export const MyBuzzerDocument = gql`
+    query MyBuzzer {
+  myBuzzer {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyBuzzerGQL extends Apollo.Query<MyBuzzerQuery, MyBuzzerQueryVariables> {
+    document = MyBuzzerDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const CreateBuzzerDocument = gql`
+    mutation CreateBuzzer($code: String!) {
+  createBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class CreateBuzzerGQL extends Apollo.Mutation<CreateBuzzerMutation, CreateBuzzerMutationVariables> {
+    document = CreateBuzzerDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UpdateBuzzerCodeDocument = gql`
+    mutation UpdateBuzzerCode($code: String!) {
+  updateBuzzerCode(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UpdateBuzzerCodeGQL extends Apollo.Mutation<UpdateBuzzerCodeMutation, UpdateBuzzerCodeMutationVariables> {
+    document = UpdateBuzzerCodeDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const LockBuzzerDocument = gql`
+    mutation LockBuzzer($code: String!) {
+  lockBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class LockBuzzerGQL extends Apollo.Mutation<LockBuzzerMutation, LockBuzzerMutationVariables> {
+    document = LockBuzzerDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UnlockBuzzerDocument = gql`
+    mutation UnlockBuzzer($code: String!) {
+  unlockBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UnlockBuzzerGQL extends Apollo.Mutation<UnlockBuzzerMutation, UnlockBuzzerMutationVariables> {
+    document = UnlockBuzzerDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ClearAllBuzzerPressesDocument = gql`
+    mutation ClearAllBuzzerPresses($code: String!) {
+  clearAllBuzzerPresses(code: $code) {
+    user {
+      id
+      name
+    }
+    pressedAt
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ClearAllBuzzerPressesGQL extends Apollo.Mutation<ClearAllBuzzerPressesMutation, ClearAllBuzzerPressesMutationVariables> {
+    document = ClearAllBuzzerPressesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ClearSelectedBuzzerPressesDocument = gql`
+    mutation ClearSelectedBuzzerPresses($input: ClearBuzzerPressesInput!) {
+  clearBuzzerPresses(input: $input) {
+    user {
+      id
+      name
+    }
+    pressedAt
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ClearSelectedBuzzerPressesGQL extends Apollo.Mutation<ClearSelectedBuzzerPressesMutation, ClearSelectedBuzzerPressesMutationVariables> {
+    document = ClearSelectedBuzzerPressesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GetBuzzerByCodeDocument = gql`
+    query GetBuzzerByCode($code: String!) {
+  buzzer(code: $code) {
     id
     name
     creator {
@@ -185,8 +458,8 @@ export const GetBuzzerByIdDocument = gql`
   @Injectable({
     providedIn: 'root'
   })
-  export class GetBuzzerByIdGQL extends Apollo.Query<GetBuzzerByIdQuery, GetBuzzerByIdQueryVariables> {
-    document = GetBuzzerByIdDocument;
+  export class GetBuzzerByCodeGQL extends Apollo.Query<GetBuzzerByCodeQuery, GetBuzzerByCodeQueryVariables> {
+    document = GetBuzzerByCodeDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -285,8 +558,8 @@ export const PressBuzzerDocument = gql`
     }
   }
 export const BuzzerPressesDocument = gql`
-    subscription BuzzerPresses($id: ID!) {
-  buzzerPresses(id: $id) {
+    subscription BuzzerPresses($code: String!) {
+  buzzerPresses(code: $code) {
     action
     presses {
       user {

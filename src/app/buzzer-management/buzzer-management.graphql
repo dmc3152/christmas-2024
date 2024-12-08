@@ -1,0 +1,99 @@
+query MyBuzzer {
+  myBuzzer {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+mutation CreateBuzzer($code: String!) {
+  createBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+mutation UpdateBuzzerCode($code: String!) {
+  updateBuzzerCode(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+mutation LockBuzzer($code: String!) {
+  lockBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+mutation UnlockBuzzer($code: String!) {
+  unlockBuzzer(code: $code) {
+    id
+    name
+    state
+    allowUserToClearResponse
+    presses {
+      user {
+        id
+        name
+      }
+      pressedAt
+    }
+  }
+}
+
+mutation ClearAllBuzzerPresses($code: String!) {
+  clearAllBuzzerPresses(code: $code) {
+    user {
+      id
+      name
+    }
+    pressedAt
+  }
+}
+
+mutation ClearSelectedBuzzerPresses($input: ClearBuzzerPressesInput!) {
+  clearBuzzerPresses(input: $input) {
+    user {
+      id
+      name
+    }
+    pressedAt
+  }
+}

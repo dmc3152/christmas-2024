@@ -1,5 +1,5 @@
-query GetBuzzerById($buzzerId: ID!) {
-  buzzer(id: $buzzerId) {
+query GetBuzzerByCode($code: String!) {
+  buzzer(code: $code) {
     id
     name
     creator {
@@ -50,8 +50,8 @@ mutation PressBuzzer($code: String!) {
   pressBuzzer(code: $code)
 }
 
-subscription BuzzerPresses($id: ID!) {
-  buzzerPresses(id: $id) {
+subscription BuzzerPresses($code: String!) {
+  buzzerPresses(code: $code) {
     action
     presses {
       user {
