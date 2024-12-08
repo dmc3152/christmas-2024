@@ -27,7 +27,9 @@
         @if (!isDisabled()) {
         <mat-card-actions class="card-bottom">
             <button mat-button (click)="loadSound()">Change Sound</button>
+            @if (isSoundPlaying()) {
             <button mat-button (click)="stopSound()">Stop Sound</button>
+            }
         </mat-card-actions>
         }
     </mat-card>

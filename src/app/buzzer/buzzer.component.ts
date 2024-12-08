@@ -73,6 +73,7 @@ export class BuzzerComponent {
     if (!this.userName() || !this.buzzerCode()) return 'Please enter the game code';
     return this.isDisabled() ? 'Buzzer is locked' : 'Press Me';
   })
+  isSoundPlaying = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -165,6 +166,7 @@ export class BuzzerComponent {
     if (this._sound?.playing()) return;
     
     this._sound?.play();
+    this.isSoundPlaying.set(this._sound?.playing() || false);
 
     const code = this.buzzerCode();
     const isAlreadyPressed = this.buzzerAvailability().isPressed;
@@ -185,9 +187,11 @@ export class BuzzerComponent {
 
   releaseButton() {
     this._sound?.stop();
+    this.isSoundPlaying.set(false);
   }
 
   stopSound() {
     this._sound?.stop();
+    this.isSoundPlaying.set(false);
   }
 }
