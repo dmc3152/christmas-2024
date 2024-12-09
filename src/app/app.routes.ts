@@ -5,6 +5,7 @@ import { BuzzerComponent } from './buzzer/buzzer.component';
 import { LyricsComponent } from './lyrics/lyrics.component';
 import { BuzzerManagementComponent } from './buzzer-management/buzzer-management.component';
 import { AuthGuard } from './auth-guard.service';
+import { ContactComponent } from './contact/contact.component';
 
 export const routes: Routes = [
     {
@@ -28,6 +29,10 @@ export const routes: Routes = [
             {
                 path: 'lyrics',
                 component: LyricsComponent
+            },
+            {
+                path: 'contact',
+                component: ContactComponent
             },
             {
                 path: 'admin',
