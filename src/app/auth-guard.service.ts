@@ -36,7 +36,7 @@ const isAuthenticated = async (): Promise<boolean> => {
         }
       }))
   ));
-  console.log('auth guard', result.data.unauthenticatedSelf?.name)
+  
   return !!result.data.unauthenticatedSelf?.name;
 }
 

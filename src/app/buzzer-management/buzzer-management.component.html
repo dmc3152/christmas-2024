@@ -1,55 +1,92 @@
+
 <div class="container">
-    <mat-card appearance="raised">
-        <mat-card-content class="card-top">
-            <form [formGroup]="buzzerForm" [style.width]="'100%'">
-                <mat-form-field [style.width]="'100%'">
-                    <mat-label for="code">Buzzer Code</mat-label>
-                    <input matInput id="code" type="text" [formControl]="buzzerForm.controls.code">
-                    <mat-hint>Participants use this code to connect to the buzzer</mat-hint>
-                </mat-form-field>
-            </form>
-        </mat-card-content>
-        <mat-card-actions class="card-bottom">
-            @if (!myBuzzer()?.name) {
-            <button mat-button (click)="createBuzzer()" [disabled]="!buzzerForm.valid">Create Buzzer</button>
-            }
-            @else {
-            <button mat-button (click)="updateBuzzerCode()" [disabled]="!buzzerForm.valid">Update Buzzer Code</button>
-            }
-        </mat-card-actions>
-    </mat-card>
-
-    @if (myBuzzer()?.name) {
-    <mat-card appearance="raised">
-        <mat-card-content class="card-top">
-            <form [formGroup]="form">
-                <mat-selection-list #presses [formControl]="buzzerPressesControl" name="buzzerPresses" >
-                    @for (press of buzzerPresses(); track press) {
-                    <mat-list-option [value]="press.user.id">
-                        <span style="display: flex; flex-direction: column;">
-                            <span>{{press.user.name}}</span>
-                            <small><i>{{press.time}}</i></small>
-                        </span>
-                    </mat-list-option>
+    <div class="scoreboard-wrapper">
+        <mat-card appearance="raised">
+            <mat-card-header class="card-top">
+                <mat-card-title>Scoreboard</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="scoreboard">
+                    @for (score of scoreboard(); track score.user.id; let index = $index;) {
+                    <div class="score">
+                        <div class="flex" style="align-items: center; gap: 16px">
+                            <div style="font-size: x-large;">{{index + 1}}</div>
+                            <div class="score-text">
+                                <span class="score-name">{{score.user.name}}</span>
+                                <span>Score: <b>{{score.score}}</b></span>
+                            </div>
+                        </div>
+                        <div class="flex">
+                            <button mat-icon-button (click)="increaseScore(score)"><mat-icon>add</mat-icon></button>
+                            <button mat-icon-button (click)="decreaseScore(score)"><mat-icon>remove</mat-icon></button>
+                            <button mat-icon-button (click)="removeFromScoreboard(score)"><mat-icon>delete</mat-icon></button>
+                        </div>
+                    </div>
                     }
-                </mat-selection-list>
-            </form>
-        </mat-card-content>
-        <mat-card-actions class="card-bottom">
-            <button mat-button (click)="clearSelected()" [disabled]="!isClearSelectedEnabled()">Clear Selected</button>
-        </mat-card-actions>
-    </mat-card>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
 
-    <mat-card appearance="raised">
-        <mat-card-actions class="card-top card-bottom">
-            <button mat-button (click)="clearAll()">Clear All</button>
-            @if (myBuzzer()?.state === 'INACTIVE') {
-            <button mat-button (click)="unlockBuzzer()">Unlock Buzzer</button>
-            }
-            @else {
-            <button mat-button (click)="lockBuzzer()">Lock Buzzer</button>
-            }
-        </mat-card-actions>
-    </mat-card>
-    }
+    <div class="buzzer-responses">
+        @if (myBuzzer()?.name) {
+        <mat-card appearance="raised">
+            <mat-card-header class="card-top">
+                <mat-card-title>Responses</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <form [formGroup]="form">
+                    <mat-selection-list #presses [formControl]="buzzerPressesControl" name="buzzerPresses" >
+                        @for (press of buzzerPresses(); track press;let index = $index;) {
+                        <mat-list-option [value]="press.user.id">
+                            <span class="flex" style="align-items: center; gap: 16px;">
+                                <span style="font-size: large;">{{index + 1}}</span>
+                                <span style="display: flex; flex-direction: column;">
+                                    <span>{{press.user.name}}</span>
+                                    <small><i>{{press.time}}</i></small>
+                                </span>
+                            </span>
+                        </mat-list-option>
+                        }
+                    </mat-selection-list>
+                </form>
+            </mat-card-content>
+            <mat-card-actions class="card-bottom">
+                <button mat-button (click)="clearSelected()" [disabled]="!isClearSelectedEnabled()">Clear Selected</button>
+            </mat-card-actions>
+        </mat-card>
+
+        <mat-card appearance="raised">
+            <mat-card-actions class="card-top card-bottom">
+                <button mat-button (click)="clearAll()">Clear All</button>
+                @if (myBuzzer()?.state === 'INACTIVE') {
+                <button mat-button (click)="unlockBuzzer()">Unlock Buzzer</button>
+                }
+                @else {
+                <button mat-button (click)="lockBuzzer()">Lock Buzzer</button>
+                }
+            </mat-card-actions>
+        </mat-card>
+        }
+
+        <mat-card appearance="raised">
+            <mat-card-content class="card-top">
+                <form [formGroup]="buzzerForm" [style.width]="'100%'">
+                    <mat-form-field [style.width]="'100%'">
+                        <mat-label for="code">Buzzer Code</mat-label>
+                        <input matInput id="code" type="text" [formControl]="buzzerForm.controls.code">
+                        <mat-hint>Participants use this code to connect to the buzzer</mat-hint>
+                    </mat-form-field>
+                </form>
+            </mat-card-content>
+            <mat-card-actions class="card-bottom">
+                @if (!myBuzzer()?.name) {
+                <button mat-button (click)="createBuzzer()" [disabled]="!buzzerForm.valid">Create Buzzer</button>
+                }
+                @else {
+                <button mat-button (click)="updateBuzzerCode()" [disabled]="!buzzerForm.valid">Update Buzzer Code</button>
+                }
+            </mat-card-actions>
+        </mat-card>
+    </div>
 </div>

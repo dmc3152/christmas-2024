@@ -15,6 +15,8 @@
 
     <mat-card appearance="raised">
         <mat-card-content class="card-top" [class.card-bottom]="isDisabled()">
+            <span>Score: {{myScore().score || 0}}</span>
+
             <button class="buzzer-button" [class.disabled]="isDisabled()" (mouseup)="releaseButton()" (press)="pressButton()" (pressup)="releaseButton()" [disabled]="isDisabled()">
                 <span class="buzzer-label">{{buzzerText()}}</span>
             </button>

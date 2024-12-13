@@ -5,8 +5,8 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { debounceTime, distinctUntilChanged, EMPTY, map, Observable, shareReplay, Subscription } from 'rxjs';
-import { BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, PressBuzzerGQL } from '../../../graphql/generated';
+import { debounceTime, distinctUntilChanged, EMPTY, map, Observable, shareReplay, Subscription, take } from 'rxjs';
+import { AddToScoreboardGQL, BuzzerAvailabilityGQL, BuzzerAvailabilitySubscription, GetUnauthenticatedSelfGQL, MyScoreStateGQL, MyScoreStateSubscription, PressBuzzerGQL } from '../../../graphql/generated';
 import { Howl } from 'howler';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -26,8 +26,11 @@ export class BuzzerComponent {
   private pressBuzzerMutation = inject(PressBuzzerGQL);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
+  private addToScoreboardMutation = inject(AddToScoreboardGQL);
+  private myScoreStateGql = inject(MyScoreStateGQL);
 
   private _buzzerSubscription?: Subscription;
+  private _scoreSubscription?: Subscription;
   private _soundLibrary = [
     'sounds/bell.mp3',
     'sounds/carol-of-the-bells.mp3',
@@ -43,6 +46,8 @@ export class BuzzerComponent {
 
   buzzerSubscription = signal<Observable<number | undefined>>(EMPTY);
   buzzerAvailability = signal<BuzzerAvailabilitySubscription['buzzerAvailability']>({ isAvailable: false, isPressed: false });
+  myScore = signal<MyScoreStateSubscription['myScore']>({ onScoreboard: false });
+
 
   isLarge$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Large)
     .pipe(
@@ -79,16 +84,25 @@ export class BuzzerComponent {
     effect(() => {
       if (!this.userName() || !this.buzzerCode()) {
         this._closeBuzzerSubscription();
+        this._closeScoreSubscription();
         this.buzzerAvailability.set({ isAvailable: false, isPressed: false });
+        this.myScore.set({ onScoreboard: false });
         return;
       }
 
       this._closeBuzzerSubscription();
+      this._closeScoreSubscription();
       const code = this.formGroup.controls.code.value;
       if (!code) return;
+
       this._buzzerSubscription = this.buzzerAvailabilityQuery.subscribe({ code }).pipe(map(result => result.data?.buzzerAvailability))
         .subscribe(buzzerAvailability => {
           this.buzzerAvailability.set(buzzerAvailability || { isAvailable: false, isPressed: false });
+        });
+      
+      this._scoreSubscription = this.myScoreStateGql.subscribe({ code }).pipe(map(result => result.data?.myScore))
+        .subscribe(myScore => {
+          this.myScore.set(myScore || { onScoreboard: false });
         });
     });
 
@@ -107,6 +121,7 @@ export class BuzzerComponent {
 
   ngOnDestroy() {
     this._closeBuzzerSubscription();
+    this._closeScoreSubscription();
   }
 
   loadSound = () => {
@@ -149,6 +164,12 @@ export class BuzzerComponent {
     }
   }
 
+  private _closeScoreSubscription() {
+    if (this._scoreSubscription) {
+      this._scoreSubscription.unsubscribe();
+    }
+  }
+
   openDialog(): void {
     const dialogRef = this.dialog.open(LoginModalComponent, {
       data: { name: this.formGroup.controls.name.value },
@@ -163,6 +184,7 @@ export class BuzzerComponent {
   }
 
   pressButton() {
+    if (this.isDisabled()) return;
     if (this._sound?.playing()) return;
     
     this._sound?.play();
@@ -173,11 +195,27 @@ export class BuzzerComponent {
     if (!isAlreadyPressed && code) {
       this._sendPress(code);
     }
+
+    if (!this.myScore().onScoreboard && code) {
+      this._addToScoreboard(code);
+    }
+  }
+
+  private _addToScoreboard = (code: string) => {
+    this.addToScoreboardMutation
+      .mutate({ code })
+      .pipe(take(1))
+      .subscribe(result => {
+        if (!result.data?.addToScoreboard) {
+          console.error('Failed to add to scoreboard');
+        }
+      });
   }
 
   private _sendPress = (code: string) => {
     this.pressBuzzerMutation
       .mutate({ code })
+      .pipe(take(1))
       .subscribe(result => {
         if (!result.data?.pressBuzzer) {
           console.error('Failed to press buzzer');

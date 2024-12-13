@@ -97,3 +97,28 @@ mutation ClearSelectedBuzzerPresses($input: ClearBuzzerPressesInput!) {
     pressedAt
   }
 }
+
+mutation IncreaseScore($input: IncreaseScoreInput!) {
+  increaseScore(input: $input)
+}
+
+mutation DecreaseScore($input: DecreaseScoreInput!) {
+  decreaseScore(input: $input)
+}
+
+mutation RemoveFromScoreboard($input: RemoveFromScoreboardInput!) {
+  removeFromScoreboard(input: $input)
+}
+
+subscription LiveScoreboard($code: String!) {
+  scoreboard(code: $code) {
+    action
+    scores {
+      user {
+        id
+        name
+      }
+      score
+    }
+  }
+}

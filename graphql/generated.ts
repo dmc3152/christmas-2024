@@ -19,6 +19,15 @@ export type Scalars = {
   DateTime: { input: any; output: any; }
 };
 
+export enum ActionEnum {
+  Close = 'CLOSE',
+  Create = 'CREATE',
+  Delete = 'DELETE',
+  Heartbeat = 'HEARTBEAT',
+  Initial = 'INITIAL',
+  Update = 'UPDATE'
+}
+
 export type Buzzer = {
   __typename?: 'Buzzer';
   allowUserToClearResponse: Scalars['Boolean']['output'];
@@ -57,17 +66,36 @@ export type ClearBuzzerPressesInput = {
   userIds: Array<Scalars['ID']['input']>;
 };
 
+export type DecreaseScoreInput = {
+  code: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+export type IncreaseScoreInput = {
+  code: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
+  addToScoreboard: Scalars['Boolean']['output'];
   clearAllBuzzerPresses: Array<BuzzerPress>;
   clearBuzzerPresses: Array<BuzzerPress>;
   createBuzzer?: Maybe<Buzzer>;
+  decreaseScore?: Maybe<Scalars['Int']['output']>;
+  increaseScore?: Maybe<Scalars['Int']['output']>;
   lockBuzzer?: Maybe<Buzzer>;
   pressBuzzer: Scalars['Boolean']['output'];
+  removeFromScoreboard?: Maybe<Scalars['Boolean']['output']>;
   signInAsUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
   unlockBuzzer?: Maybe<Buzzer>;
   updateBuzzerCode?: Maybe<Buzzer>;
   updateUnauthenticatedUser?: Maybe<UnauthenticatedUser>;
+};
+
+
+export type MutationAddToScoreboardArgs = {
+  code: Scalars['String']['input'];
 };
 
 
@@ -86,6 +114,16 @@ export type MutationCreateBuzzerArgs = {
 };
 
 
+export type MutationDecreaseScoreArgs = {
+  input: DecreaseScoreInput;
+};
+
+
+export type MutationIncreaseScoreArgs = {
+  input: IncreaseScoreInput;
+};
+
+
 export type MutationLockBuzzerArgs = {
   code: Scalars['String']['input'];
 };
@@ -93,6 +131,11 @@ export type MutationLockBuzzerArgs = {
 
 export type MutationPressBuzzerArgs = {
   code: Scalars['String']['input'];
+};
+
+
+export type MutationRemoveFromScoreboardArgs = {
+  input: RemoveFromScoreboardInput;
 };
 
 
@@ -115,6 +158,12 @@ export type MutationUpdateUnauthenticatedUserArgs = {
   name: Scalars['String']['input'];
 };
 
+export type MyScoreSubscription = {
+  __typename?: 'MyScoreSubscription';
+  onScoreboard: Scalars['Boolean']['output'];
+  score?: Maybe<Scalars['Int']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   buzzer?: Maybe<Buzzer>;
@@ -133,10 +182,29 @@ export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
 
+export type RemoveFromScoreboardInput = {
+  code: Scalars['String']['input'];
+  userId: Scalars['ID']['input'];
+};
+
+export type Score = {
+  __typename?: 'Score';
+  score: Scalars['Int']['output'];
+  user: UnauthenticatedUser;
+};
+
+export type ScoreboardSubscription = {
+  __typename?: 'ScoreboardSubscription';
+  action: ActionEnum;
+  scores?: Maybe<Array<Score>>;
+};
+
 export type Subscription = {
   __typename?: 'Subscription';
   buzzerAvailability: BuzzerAvailability;
   buzzerPresses: BuzzerPressSubscription;
+  myScore: MyScoreSubscription;
+  scoreboard: ScoreboardSubscription;
 };
 
 
@@ -146,6 +214,16 @@ export type SubscriptionBuzzerAvailabilityArgs = {
 
 
 export type SubscriptionBuzzerPressesArgs = {
+  code: Scalars['String']['input'];
+};
+
+
+export type SubscriptionMyScoreArgs = {
+  code: Scalars['String']['input'];
+};
+
+
+export type SubscriptionScoreboardArgs = {
   code: Scalars['String']['input'];
 };
 
@@ -201,6 +279,48 @@ export type ClearSelectedBuzzerPressesMutationVariables = Exact<{
 
 
 export type ClearSelectedBuzzerPressesMutation = { __typename?: 'Mutation', clearBuzzerPresses: Array<{ __typename?: 'BuzzerPress', pressedAt: any, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> };
+
+export type IncreaseScoreMutationVariables = Exact<{
+  input: IncreaseScoreInput;
+}>;
+
+
+export type IncreaseScoreMutation = { __typename?: 'Mutation', increaseScore?: number | null };
+
+export type DecreaseScoreMutationVariables = Exact<{
+  input: DecreaseScoreInput;
+}>;
+
+
+export type DecreaseScoreMutation = { __typename?: 'Mutation', decreaseScore?: number | null };
+
+export type RemoveFromScoreboardMutationVariables = Exact<{
+  input: RemoveFromScoreboardInput;
+}>;
+
+
+export type RemoveFromScoreboardMutation = { __typename?: 'Mutation', removeFromScoreboard?: boolean | null };
+
+export type LiveScoreboardSubscriptionVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type LiveScoreboardSubscription = { __typename?: 'Subscription', scoreboard: { __typename?: 'ScoreboardSubscription', action: ActionEnum, scores?: Array<{ __typename?: 'Score', score: number, user: { __typename?: 'UnauthenticatedUser', id: string, name: string } }> | null } };
+
+export type AddToScoreboardMutationVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type AddToScoreboardMutation = { __typename?: 'Mutation', addToScoreboard: boolean };
+
+export type MyScoreStateSubscriptionVariables = Exact<{
+  code: Scalars['String']['input'];
+}>;
+
+
+export type MyScoreStateSubscription = { __typename?: 'Subscription', myScore: { __typename?: 'MyScoreSubscription', onScoreboard: boolean, score?: number | null } };
 
 export type GetBuzzerByCodeQueryVariables = Exact<{
   code: Scalars['String']['input'];
@@ -428,6 +548,114 @@ export const ClearSelectedBuzzerPressesDocument = gql`
   })
   export class ClearSelectedBuzzerPressesGQL extends Apollo.Mutation<ClearSelectedBuzzerPressesMutation, ClearSelectedBuzzerPressesMutationVariables> {
     document = ClearSelectedBuzzerPressesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const IncreaseScoreDocument = gql`
+    mutation IncreaseScore($input: IncreaseScoreInput!) {
+  increaseScore(input: $input)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class IncreaseScoreGQL extends Apollo.Mutation<IncreaseScoreMutation, IncreaseScoreMutationVariables> {
+    document = IncreaseScoreDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DecreaseScoreDocument = gql`
+    mutation DecreaseScore($input: DecreaseScoreInput!) {
+  decreaseScore(input: $input)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DecreaseScoreGQL extends Apollo.Mutation<DecreaseScoreMutation, DecreaseScoreMutationVariables> {
+    document = DecreaseScoreDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const RemoveFromScoreboardDocument = gql`
+    mutation RemoveFromScoreboard($input: RemoveFromScoreboardInput!) {
+  removeFromScoreboard(input: $input)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class RemoveFromScoreboardGQL extends Apollo.Mutation<RemoveFromScoreboardMutation, RemoveFromScoreboardMutationVariables> {
+    document = RemoveFromScoreboardDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const LiveScoreboardDocument = gql`
+    subscription LiveScoreboard($code: String!) {
+  scoreboard(code: $code) {
+    action
+    scores {
+      user {
+        id
+        name
+      }
+      score
+    }
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class LiveScoreboardGQL extends Apollo.Subscription<LiveScoreboardSubscription, LiveScoreboardSubscriptionVariables> {
+    document = LiveScoreboardDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddToScoreboardDocument = gql`
+    mutation AddToScoreboard($code: String!) {
+  addToScoreboard(code: $code)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddToScoreboardGQL extends Apollo.Mutation<AddToScoreboardMutation, AddToScoreboardMutationVariables> {
+    document = AddToScoreboardDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MyScoreStateDocument = gql`
+    subscription MyScoreState($code: String!) {
+  myScore(code: $code) {
+    onScoreboard
+    score
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyScoreStateGQL extends Apollo.Subscription<MyScoreStateSubscription, MyScoreStateSubscriptionVariables> {
+    document = MyScoreStateDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

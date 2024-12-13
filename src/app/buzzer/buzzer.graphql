@@ -1,0 +1,10 @@
+mutation AddToScoreboard($code: String!) {
+  addToScoreboard(code: $code)
+}
+
+subscription MyScoreState($code: String!) {
+  myScore(code: $code) {
+    onScoreboard
+    score
+  }
+}

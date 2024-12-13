@@ -1,12 +1,12 @@
-import { Component, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
-import { firstValueFrom, map, Subscription } from 'rxjs';
-import { BuzzerPress, BuzzerPressesGQL, ClearAllBuzzerPressesGQL, ClearSelectedBuzzerPressesGQL, CreateBuzzerGQL, LockBuzzerGQL, MyBuzzerDocument, MyBuzzerGQL, UnlockBuzzerGQL, UpdateBuzzerCodeGQL } from '../../../graphql/generated';
+import { firstValueFrom, map, Subscription, take } from 'rxjs';
+import { BuzzerPress, BuzzerPressesGQL, ClearAllBuzzerPressesGQL, ClearSelectedBuzzerPressesGQL, CreateBuzzerGQL, DecreaseScoreGQL, IncreaseScoreGQL, LiveScoreboardGQL, LockBuzzerGQL, MyBuzzerDocument, MyBuzzerGQL, RemoveFromScoreboardGQL, Score, UnlockBuzzerGQL, UpdateBuzzerCodeGQL } from '../../../graphql/generated';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
@@ -29,6 +29,10 @@ export class BuzzerManagementComponent {
   private unlockBuzzerGql = inject(UnlockBuzzerGQL);
   private clearSelectedBuzzerPressesGql = inject(ClearSelectedBuzzerPressesGQL);
   private clearAllBuzzerPressesGql = inject(ClearAllBuzzerPressesGQL);
+  private scoreboardGql = inject(LiveScoreboardGQL);
+  private increaseScoreGql = inject(IncreaseScoreGQL);
+  private decreaseScoreGql = inject(DecreaseScoreGQL);
+  private removeFromScoreboardGql = inject(RemoveFromScoreboardGQL);
 
   form: FormGroup;
   buzzerPresses = signal<BuzzerPressWithTime[]>([]);
@@ -39,7 +43,9 @@ export class BuzzerManagementComponent {
     code: new FormControl('', Validators.required),
   });
   myBuzzer = toSignal(this.myBuzzerGql.watch().valueChanges.pipe(map(result => result.data?.myBuzzer)));
+  scoreboard = signal<Score[]>([]);
   private _buzzerSubscription?: Subscription;
+  private _scoreboardSubscription?: Subscription;
 
   constructor() {
     this.form = new FormGroup({
@@ -48,7 +54,6 @@ export class BuzzerManagementComponent {
 
     effect(() => {
       const myBuzzer = this.myBuzzer();
-      console.log('myBuzzer', myBuzzer);
       if (!myBuzzer?.name) return;
       const code = myBuzzer.name;
       this.buzzerForm.controls.code.setValue(code);
@@ -56,6 +61,7 @@ export class BuzzerManagementComponent {
 
     effect(() => {
       this._closeBuzzerSubscription();
+      this._closeScoreboardSubscription();
       const code = this.myBuzzer()?.name;
       if (!code) return;
 
@@ -91,11 +97,45 @@ export class BuzzerManagementComponent {
             this.buzzerPresses.set(this.compareDateTimes(this.buzzerPresses().map(press => updateLookup[press.user.id] || press)));
           }
         });
+
+      this._scoreboardSubscription = this.scoreboardGql.subscribe({ code })
+        .subscribe(result => {
+          if (!result.data?.scoreboard.action) return;
+          if (!result.data?.scoreboard.scores) return;
+          if (result.data.scoreboard.action === 'HEARTBEAT') return;
+          if (result.data.scoreboard.action === 'INITIAL') {
+            this.scoreboard.set(result.data.scoreboard.scores.sort(this._sortByScore) || []);
+          }
+          if (result.data.scoreboard.action === 'DELETE') {
+            const deletedIdLookup = result.data.scoreboard.scores.reduce(
+              (lookup, score) => {
+                lookup[score.user.id] = true;
+                return lookup;
+              },
+              {} as Record<string, boolean>
+            )
+            this.scoreboard.set(this.scoreboard().filter(score => !deletedIdLookup[score.user.id]).sort(this._sortByScore));
+          }
+          if (result.data.scoreboard.action === 'CREATE') {
+            this.scoreboard.set([...this.scoreboard(), ...result.data.scoreboard.scores].sort(this._sortByScore));
+          }
+          if (result.data.scoreboard.action === 'UPDATE') {
+            const updateLookup = result.data.scoreboard.scores.reduce(
+              (lookup, score) => {
+                lookup[score.user.id] = score;
+                return lookup;
+              },
+              {} as Record<string, Score>
+            )
+            this.scoreboard.set(this.scoreboard().map(score => updateLookup[score.user.id] || score).sort(this._sortByScore));
+          }
+        });
     });
   }
 
   ngOnDestroy() {
     this._closeBuzzerSubscription();
+    this._closeScoreboardSubscription();
   }
 
   compareDateTimes = (buzzerPresses: BuzzerPress[]): BuzzerPressWithTime[] => {
@@ -192,10 +232,10 @@ export class BuzzerManagementComponent {
   clearSelected = async () => {
     const code = this.myBuzzer()?.name;
     if (!code) return;
-    
+
     const userIds = (this.buzzerPressesControl.value || []).filter(press => !!press);
     if (!userIds.length) return;
-    
+
     try {
       await firstValueFrom(this.clearSelectedBuzzerPressesGql.mutate({ input: { code, userIds } }));
       this.buzzerPressesControl.setValue([])
@@ -259,9 +299,63 @@ export class BuzzerManagementComponent {
     } catch (error) { }
   }
 
+  increaseScore = (score: Score) => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    this.increaseScoreGql.mutate({
+      input: {
+        code,
+        userId: score.user.id
+      }
+    })
+      .pipe(take(1))
+      .subscribe();
+  }
+
+  decreaseScore = (score: Score) => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    this.decreaseScoreGql.mutate({
+      input: {
+        code,
+        userId: score.user.id
+      }
+    })
+      .pipe(take(1))
+      .subscribe();
+  }
+
+  removeFromScoreboard = (score: Score) => {
+    const code = this.myBuzzer()?.name;
+    if (!code) return;
+
+    this.removeFromScoreboardGql.mutate({
+      input: {
+        code,
+        userId: score.user.id
+      }
+    })
+      .pipe(take(1))
+      .subscribe();
+  }
+
+  private _sortByScore = (a: Score, b: Score) => {
+    if (a.score > b.score) return -1;
+    if (a.score < b.score) return 1;
+    return 0;
+  };
+
   private _closeBuzzerSubscription() {
     if (this._buzzerSubscription) {
       this._buzzerSubscription.unsubscribe();
+    }
+  }
+
+  private _closeScoreboardSubscription() {
+    if (this._scoreboardSubscription) {
+      this._scoreboardSubscription.unsubscribe();
     }
   }
 }
